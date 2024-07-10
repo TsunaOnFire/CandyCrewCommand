@@ -1,0 +1,62 @@
+{
+  ConstraintSets: {
+    start: {
+      box_top: {
+        width: 32,
+        height: 3,
+        start: ['parent', 'start'],
+        top: ['parent', 'top'],
+        bottom: ['box_mid', 'top'],
+        rotationZ: 0
+      },
+      box_mid: {
+        width: 32,
+        height: 3,
+        start: ['parent', 'start'],
+        top: ['box_top', 'bottom'],
+        bottom: ['box_bot', 'top'],
+        rotationZ: 0,
+      },
+      box_bot: {
+        width: 32,
+        height: 3,
+        start: ['parent', 'start'],
+        top: ['box_mid', 'bottom'],
+        bottom: ['parent', 'bottom'],
+        alpha: 1
+      },
+    },
+    end: {
+      box_top: {
+        width: 32,
+        height: 3,
+        start: ['parent', 'start'],
+        top: ['parent', 'top'],
+        bottom: ['parent', 'bottom'],
+        rotationZ: 45
+      },
+      box_mid: {
+        width: 32,
+        height: 3,
+        start: ['parent', 'start'],
+        top: ['parent', 'top'],
+        bottom: ['parent', 'bottom'],
+        rotationZ: -45
+      },
+      box_bot: {
+        width: 32,
+        height: 3,
+        start: ['parent', 'start'],
+        bottom: ['parent', 'bottom'],
+        alpha: 0,
+      }
+    },
+    Transitions: {  //to set transition properties between Start and End point.
+      default: {
+        from: 'start',
+        to: 'end',
+        pathMotionArc: 'startHorizontal', // Text will move down with slight circular arc
+      }
+    }
+  }
+}

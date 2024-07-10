@@ -1,6 +1,7 @@
 package com.aph.willywonka.ui.viewmodel
 
-import androidx.lifecycle.MutableLiveData
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aph.willywonka.data.model.WorkerBO
@@ -14,19 +15,19 @@ import javax.inject.Inject
 class WorkerViewModel @Inject constructor(
     private val getWorkerByIdUseCase: GetWorkerByIdUseCase,
 ): ViewModel() {
-    val worker = MutableLiveData<WorkerBO?>()//Filtered List
-    val isLoading = MutableLiveData<Boolean>()
+    val worker : MutableState<WorkerBO?> = mutableStateOf(null)
+    val isLoading : MutableState<Boolean> = mutableStateOf(false)
 
     fun requestWorker(id: Int) {
 
         viewModelScope.launch {
-            isLoading.postValue(true)
+            isLoading.value = true
             val result = getWorkerByIdUseCase(id)
 
             if(result != null && result.isFullDownload()){
-                worker.postValue(result)
+                worker.value = result
             }
-            isLoading.postValue(false)
+            isLoading.value = false
         }
     }
 

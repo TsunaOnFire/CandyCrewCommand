@@ -3,13 +3,16 @@ package com.aph.willywonka.utils
 import android.content.SharedPreferences
 import android.os.Parcelable
 import android.util.Log
+import androidx.annotation.DrawableRes
+import com.aph.willywonka.R
+import com.aph.willywonka.data.model.FavouriteModel
 import com.aph.willywonka.data.model.WorkerBO
 import java.io.InvalidClassException
 import java.text.SimpleDateFormat
 
-class APH_toolbox {
+class AphToolbox {
     companion object{
-        fun Fix_Date_Cutom(date_and_hour: String, InputFormat: String, OutputFormat: String):String{
+        fun FixDateCustom(date_and_hour: String, InputFormat: String, OutputFormat: String):String{
             var result = date_and_hour
             try {
                 val dateFormatInput = SimpleDateFormat(InputFormat) //this format changeable according to your choice
@@ -25,7 +28,7 @@ class APH_toolbox {
                 }
             }
             catch(e:Exception){
-                Log.e("Fix_Date_Cutom",e.message.toString())
+                Log.e("FixDateCustom",e.message.toString())
 
             }
 
@@ -38,6 +41,35 @@ class APH_toolbox {
             return worker
         }
 
+        fun DummyWorker(id: Int = 1) = WorkerBO(
+            id = id,
+            first_name = "$id F.Name",
+            last_name = "Last Name",
+            description = "Example Description",
+            image = "https://picsum.photos/200/300",
+            profession = "Profession",
+            quota = "Example Quota",
+            height = 180,
+            country = "Example Country",
+            age = 100,
+            gender = "M",
+            email = "example@example.com",
+            FavouriteModel(
+                color = "Example Color",
+                food = "Example Food",
+                random_string = "Example Random STRING",
+                song = "Random Song"
+            )
+
+
+        )
+
+        @DrawableRes
+        fun GetGenderIcon(gender: String?) = when(gender) {
+            "M"-> R.mipmap.ic_male
+            "F"-> R.mipmap.ic_female
+            else-> R.mipmap.ic_female
+        }
     }
 }
 

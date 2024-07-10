@@ -12,6 +12,7 @@
 
     <string name="filter_gender">Gender filter:</string>
     <string name="filter_profession">Profession filter:</string>
+    <string name="profession">Profession:</string>
 
     <string name="filter_profession_hint">Developer</string>
     <string name="filter_button_search">Search</string>
@@ -23,6 +24,8 @@
 
     <string name="text_no_match"><b><big><big>Oops!</big></big></b>\n All the <b>Oompa Loompas</b> escaped.\nIt seems they don\'t identify with the\n<b><big> search criteria.</big></b></string>
 
+    <string name="workerItemList_avatar_content_description">Worker Avatar Image</string>
+    <string name="workerItemList_gender_content_description">Worker Gender Image</string>
 
     <!-- PlaceHolders -->
     <string name="placeholder_food">Food: %1$s</string>
@@ -33,4 +36,5 @@
     <string name="placeholder_age">Age: %d y/o</string>
     <string name="placeholder_height">Height: %d cm</string>
     <string name="placeholder_name">%1$s %2$s</string>
+    <string name="title_activity_main2">MainActivity2</string>
 </resources>

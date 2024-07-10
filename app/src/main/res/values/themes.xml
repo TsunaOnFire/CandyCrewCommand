@@ -39,12 +39,13 @@
     </style>
 
     <style name="MyCardView" parent="@style/Widget.MaterialComponents.CardView">
-        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.MaterialCardView.Cut</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.MaterialCardView.Cut
+        </item>
         <item name="strokeWidth">1dp</item>
         <item name="strokeColor">@color/accent_color_borders</item>
     </style>
 
-    <style name="dynamicIcon"  parent="">
+    <style name="dynamicIcon" parent="">
         <item name="android:background">@color/accent_color_borders</item>
     </style>
 

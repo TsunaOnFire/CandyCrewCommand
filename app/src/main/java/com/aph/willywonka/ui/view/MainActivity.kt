@@ -2,177 +2,40 @@ package com.aph.willywonka.ui.view
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
-import android.widget.ArrayAdapter
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.isVisible
-import androidx.core.widget.doOnTextChanged
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.aph.willywonka.data.model.GENDER_FEMALE
-import com.aph.willywonka.data.model.GENDER_MALE
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Scaffold
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.unit.dp
 import com.aph.willywonka.data.model.WorkerBO
-import com.aph.willywonka.databinding.ActivityMainBinding
-import com.aph.willywonka.ui.adapters.WorkersAdapter
+import com.aph.willywonka.ui.materialDesing.AppTheme
+import com.aph.willywonka.ui.view.composables.AppBarComposable
+import com.aph.willywonka.ui.view.composables.ListWorkers
+import com.aph.willywonka.ui.view.composables.WorkerFilterComposable
 import com.aph.willywonka.ui.viewmodel.WorkerListViewModel
 import dagger.hilt.android.AndroidEntryPoint
-
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
-
-    private lateinit var binding:ActivityMainBinding
+class MainActivity : ComponentActivity() {
     private val workerListViewModel : WorkerListViewModel by viewModels()
-
-    private lateinit var workersAdapter: WorkersAdapter
-    private val workers= mutableListOf<WorkerBO>()
-
-    private lateinit var professionAdapter: ArrayAdapter<String>
-    private var professions= mutableListOf<String>()
-
-    private lateinit var layoutManager: LinearLayoutManager
-
-    private lateinit var  animationIn : Animation
-    private lateinit var  animationOut : Animation
-
-    private var prevWorkerListSize= 0;
-    private var mustForceReloadRecycler= false;
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        animationIn = AnimationUtils.loadAnimation(this, com.google.android.material.R.anim.abc_slide_in_top)
-        animationOut = AnimationUtils.loadAnimation(this, com.google.android.material.R.anim.abc_slide_out_top)
-
-        setContentView(binding.root)
-        setUpView()
-        setUpObservers()
-        setUpListeners()
-
-        workerListViewModel.requestPage()
-    }
-
-    private fun setUpView() {
-        setUpAutoCompleteTextView()
-        setUpHamburgerAnimationView()
-        initRecyclerView()
-    }
-
-    private fun setUpListeners() {
-        binding.workerListSwipeRefreshLayout.setOnRefreshListener {//SWIPE TO REFRESH ACTION
-            workerListViewModel.requestPage()
-        }
-
-        binding.workerListRecycler.setOnScrollChangeListener { view, i, i2, i3, i4 ->
-            if(atBottom()){
-                workerListViewModel.requestPage()
-            }
-        }
-
-        binding.workerListFilterApplyFilers.setOnClickListener {
-            mustForceReloadRecycler = true
-            workerListViewModel.filterWorkers()
-            if (binding.workerListMotionHamburger.progress == 1.0F)  {
-                binding.workerListMotionHamburger.transitionToStart()
-                binding.workerListLayoutFiltersDialog.startAnimation(animationOut)
-                binding.workerListLayoutFiltersDialog.visibility = View.GONE
-            }
-        }
-
-        binding.workerListFilterGenderGroup.setOnCheckedChangeListener { radioGroup, id ->
-            workerListViewModel.setGenderFilter(
-                when (id) {
-                    binding.workerListFilterGenderFemale.id -> GENDER_FEMALE
-                    binding.workerListFilterGenderMale.id -> GENDER_MALE
-                    else -> null
-                }
-            )
-        }
-
-        binding.workerListFilterProfessionAutocomplete.doOnTextChanged { text, start, before, count ->
-            binding.workerListFilterProfessionAutocomplete.showDropDown()
-            workerListViewModel.setProfessionFilter(text.toString())
-        }
-    }
-
-    private fun setUpObservers() {
-        workerListViewModel.isLoading.observe(this) { isLoading ->
-            binding.workerListSwipeRefreshLayout.isRefreshing = isLoading
-        }
-
-        workerListViewModel.workersList.observe(this) { updated_list ->
-            prevWorkerListSize = workers.size
-            workers.clear()
-            workers.addAll(updated_list)
-
-            if(workerListViewModel.getFilterApply() && mustForceReloadRecycler) {
-                mustForceReloadRecycler = false
-                workersAdapter.notifyDataSetChanged()
-                binding.workerListEmptyStateLabel.isVisible = workers.size == 0
-            } else{
-                if(prevWorkerListSize<workers.size){
-                    workersAdapter.notifyItemRangeChanged(prevWorkerListSize,workers.size-prevWorkerListSize)
-                } else {
-                    workersAdapter.notifyItemRangeChanged(workers.size,prevWorkerListSize-workers.size)
-                }
-            }
-        }
-
-        workerListViewModel.professionList.observe(this) { updated_list ->
-            professions.clear()
-            professions.addAll(updated_list)
-            professionAdapter.notifyDataSetChanged()
-        }
-    }
-
-    private fun setUpAutoCompleteTextView() {
-        professionAdapter = ArrayAdapter<String>(
-            this,
-            android.R.layout.simple_list_item_1,
-            professions
-        )
-
-        binding.workerListFilterProfessionAutocomplete.setAdapter(professionAdapter)
-    }
-
-    private fun setUpHamburgerAnimationView() {
-
-        val buttonHamburgerListener: Animation.AnimationListener = object : Animation.AnimationListener {
-            override fun onAnimationStart(animation: Animation) {
-                binding.workerListButtonHamburger.interactive(false)
-            }
-            override fun onAnimationEnd(animation: Animation) {
-                binding.workerListButtonHamburger.interactive(true)
-            }
-
-            override fun onAnimationRepeat(animation: Animation) {}
-        }
-
-        animationIn.setAnimationListener(buttonHamburgerListener);
-        animationOut.setAnimationListener(buttonHamburgerListener);
-
-        binding.workerListButtonHamburger.setOnClickListener {
-            if (binding.workerListMotionHamburger.progress == 0.0F) {
-                binding.workerListMotionHamburger.transitionToEnd()
-                binding.workerListLayoutFiltersDialog.startAnimation(animationIn)
-                binding.workerListLayoutFiltersDialog.visibility = View.VISIBLE
-            } else if (binding.workerListMotionHamburger.progress == 1.0F)  {
-                binding.workerListMotionHamburger.transitionToStart()
-                binding.workerListLayoutFiltersDialog.startAnimation(animationOut)
-                binding.workerListLayoutFiltersDialog.visibility = View.GONE
-
-            }
-        }
-    }
-
-    private fun initRecyclerView() {
-        workersAdapter= WorkersAdapter(workers) { onItemSelected(it) }
-        layoutManager = LinearLayoutManager(this)
-        binding.workerListRecycler.layoutManager = layoutManager
-        binding.workerListRecycler.adapter=workersAdapter
-    }
 
     private fun onItemSelected(worker: WorkerBO){
         val intent = Intent(this, DetailActivity::class.java)
@@ -182,13 +45,86 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private fun atBottom(): Boolean {
-        return (layoutManager.findLastCompletelyVisibleItemPosition()
-                == workersAdapter.itemCount - 1)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            var filterVisibility by remember { mutableStateOf(false) }
+
+            val progress = remember { Animatable(0f) }
+            val coroutineScope = rememberCoroutineScope()
+
+            fun showHideFilter() = coroutineScope.launch {
+                when (progress.value) {
+                    0f -> {
+                        filterVisibility = true
+                        progress.animateTo(1f)
+                    }
+                    1f -> {
+                        filterVisibility = false
+                        progress.animateTo(0f)
+                    }
+                    else -> {}
+                }
+            }
+
+            AppTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    Scaffold(
+                        topBar = {
+                            AppBarComposable(progress.value,
+                                Modifier
+                                    .shadow(6.dp)
+                                    .background(MaterialTheme.colorScheme.background)
+                            ) {
+                                showHideFilter()
+                            }
+                        },
+                        content = { padding ->
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(padding),
+                                color = MaterialTheme.colorScheme.background
+                            ){
+                                ListWorkers(
+                                    viewModel = workerListViewModel,
+                                    clickWorkerAction = { onItemSelected(it) }
+                                )
+
+                                AnimatedVisibility(
+                                    visible = filterVisibility,
+                                    enter = slideInVertically(initialOffsetY = { fullHeight -> -fullHeight }),
+                                    exit = slideOutVertically(targetOffsetY = { fullHeight -> -fullHeight })
+                                ) {
+                                    Surface(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        shadowElevation = 4.dp
+                                    ) {
+                                        WorkerFilterComposable(
+                                            Modifier,
+                                            workerListViewModel.getGenderFilter(),
+                                            workerListViewModel.getProfessionFilter()
+                                        ) { inputProfession, selectedGenderKey ->
+                                            workerListViewModel.setProfessionFilter(inputProfession)
+                                            workerListViewModel.setGenderFilter(selectedGenderKey)
+                                            workerListViewModel.filterWorkers()
+                                            showHideFilter()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    )
+                }
+            }
+        }
     }
 
-    private fun View.interactive(enabled: Boolean){
-        this.isClickable = enabled
-        this.isFocusable = enabled
+    override fun onPostCreate(savedInstanceState: Bundle?) {
+        super.onPostCreate(savedInstanceState)
+        workerListViewModel.requestPage()
     }
 }

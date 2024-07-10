@@ -1,5 +1,7 @@
 package com.aph.willywonka.ui.viewmodel
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -17,11 +19,11 @@ class WorkerListViewModel @Inject constructor(
     private val workerListUtils: WorkerListUtils
 ) : ViewModel() {
 
-    val workersList = MutableLiveData<MutableList<WorkerBO>>()//Filtered List
-    val isLoading = MutableLiveData<Boolean>()
+    val workersList : MutableState<List<WorkerBO>> = mutableStateOf(listOf())//Filtered List
+    val isLoading : MutableState<Boolean> = mutableStateOf(false)
 
 
-    val professionList = MutableLiveData<List<String>>()//Filtered List
+    val professionList = MutableLiveData<List<String>>()
 
 
     private var completeWorkerList = listOf<WorkerBO>()
@@ -32,7 +34,7 @@ class WorkerListViewModel @Inject constructor(
 
     fun requestPage() {
         viewModelScope.launch {
-            isLoading.postValue(true)
+            isLoading.value  = true
             val result = getWorkerListUseCase(workerListUtils.getWorkersLastRequestedPage() + 1)
 
             if (!result.isNullOrEmpty()) {
@@ -41,11 +43,11 @@ class WorkerListViewModel @Inject constructor(
                 if(isFilterApply) {
                     filterWorkers()
                 } else {
-                    workersList.postValue(result.toMutableList())
+                    workersList.value = result
                 }
             }
             getWorkerProfessionList()
-            isLoading.postValue(false)
+            isLoading.value = false
         }
     }
 
@@ -61,7 +63,7 @@ class WorkerListViewModel @Inject constructor(
 
     fun filterWorkers() {
         viewModelScope.launch {
-            isLoading.postValue(true)
+            isLoading.value = true
             var result = mutableListOf<WorkerBO>()
 
             if (profession == null && gender == null) {
@@ -91,12 +93,14 @@ class WorkerListViewModel @Inject constructor(
                 }
                 isFilterApply = true
             }
-            workersList.postValue(result)
-            isLoading.postValue(false)
+            workersList.value = result
+            isLoading.value = false
         }
     }
 
     fun setProfessionFilter(profession: String?) {this.profession=profession}
     fun setGenderFilter(gender: String?) {this.gender=gender}
+    fun getProfessionFilter(): String? = this.profession
+    fun getGenderFilter(): String? = this.gender
     fun getFilterApply() = isFilterApply
 }
